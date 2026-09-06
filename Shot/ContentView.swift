@@ -4,13 +4,18 @@ struct ContentView: View {
     @EnvironmentObject private var store: SessionStore
     @EnvironmentObject private var camera: CameraManager
     @State private var showingSettings = false
+    @State private var showingGallery = false
 
     var body: some View {
         NavigationStack {
             ZStack { Color.black.ignoresSafeArea(); main }
                 .navigationTitle("SHOT")
-                .toolbar { ToolbarItem(placement: .topBarTrailing) { Button { showingSettings = true } label: { Image(systemName: "slider.horizontal.3") }.tint(store.accent) } }
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) { Button { showingGallery = true } label: { Image(systemName: "photo.on.rectangle") }.tint(store.accent) }
+                    ToolbarItem(placement: .topBarTrailing) { Button { showingSettings = true } label: { Image(systemName: "slider.horizontal.3") }.tint(store.accent) }
+                }
                 .sheet(isPresented: $showingSettings) { SettingsView().environmentObject(store) }
+                .sheet(isPresented: $showingGallery) { GalleryView() }
         }
         .task { await camera.configure(); camera.start() }
     }
