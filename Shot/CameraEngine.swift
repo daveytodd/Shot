@@ -50,7 +50,7 @@ final class CameraEngine: NSObject, ObservableObject {
             defer { device.unlockForConfiguration() }
             let clampedISO = min(max(iso, device.activeFormat.minISO), device.activeFormat.maxISO)
             let duration = CMTime(seconds: shutter, preferredTimescale: 1_000_000)
-            if device.activeFormat.isExposureModeSupported(.custom) {
+            if device.isExposureModeSupported(.custom) {
                 device.setExposureModeCustom(duration: duration, iso: clampedISO, completionHandler: nil)
             }
         } catch {
