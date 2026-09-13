@@ -35,8 +35,8 @@ final class SubscriptionManager: ObservableObject {
             purchasedProductIDs = active
             isPro = !active.isEmpty
             error = nil
-        } catch { caughtError in
-            self.error = caughtError
+        } catch let err {
+            self.error = err
         }
     }
 
@@ -55,8 +55,8 @@ final class SubscriptionManager: ObservableObject {
             @unknown default:
                 return false
             }
-        } catch { caughtError in
-            self.error = caughtError
+        } catch let err {
+            self.error = err
             return false
         }
     }
@@ -65,8 +65,8 @@ final class SubscriptionManager: ObservableObject {
         do {
             try await AppStore.sync()
             await refresh()
-        } catch { caughtError in
-            self.error = caughtError
+        } catch let err {
+            self.error = err
         }
     }
 
