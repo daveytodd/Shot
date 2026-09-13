@@ -38,9 +38,9 @@ final class DualCameraTimelapseManager: NSObject, AVCaptureVideoDataOutputSample
         guard session.canAddOutput(backOutput), session.canAddOutput(frontOutput) else { throw CameraError.cannotAddOutput }
         session.addOutputWithNoConnections(backOutput); session.addOutputWithNoConnections(frontOutput)
         guard let backPort = backInput.ports.first(where: { $0.mediaType == .video }),
-              let frontPort = frontInput.ports.first(where: { $0.mediaType == .video }),
-              let backConnection = AVCaptureConnection(inputPorts: [backPort], output: backOutput),
-              let frontConnection = AVCaptureConnection(inputPorts: [frontPort], output: frontOutput) else { throw CameraError.cannotAddInput }
+              let frontPort = frontInput.ports.first(where: { $0.mediaType == .video }) else { throw CameraError.cannotAddInput }
+        let backConnection = AVCaptureConnection(inputPorts: [backPort], output: backOutput)
+        let frontConnection = AVCaptureConnection(inputPorts: [frontPort], output: frontOutput)
         guard session.canAddConnection(backConnection), session.canAddConnection(frontConnection) else { throw CameraError.cannotAddInput }
         session.addConnection(backConnection); session.addConnection(frontConnection)
         self.backOutput = backOutput; self.frontOutput = frontOutput
