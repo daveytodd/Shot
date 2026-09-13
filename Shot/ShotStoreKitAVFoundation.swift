@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 import StoreKit
 
@@ -21,7 +22,8 @@ final class SubscriptionManager: ObservableObject {
     deinit { updatesTask?.cancel() }
 
     func refresh() async {
-        isLoading = true; defer { isLoading = false }
+        isLoading = true
+        defer { isLoading = false }
         do {
             products = try await Product.products(for: Self.productIDs).sorted { $0.price < $1.price }
             var active = Set<String>()
@@ -30,25 +32,42 @@ final class SubscriptionManager: ObservableObject {
                     active.insert(transaction.productID)
                 }
             }
-            purchasedProductIDs = active; isPro = !active.isEmpty; error = nil
-        } catch { self.error = error }
+            purchasedProductIDs = active
+            isPro = !active.isEmpty
+            error = nil
+        } catch { caughtError in
+            self.error = caughtError
+        }
     }
 
     func purchase(_ product: Product) async -> Bool {
         do {
             switch try await product.purchase() {
             case .success(.verified(let transaction)):
-                await transaction.finish(); await refresh(); return true
+                await transaction.finish()
+                await refresh()
+                return true
             case .success(.unverified(_, let verificationError)):
-                error = verificationError; return false
-            case .userCancelled, .pending: return false
-            @unknown default: return false
+                self.error = verificationError
+                return false
+            case .userCancelled, .pending:
+                return false
+            @unknown default:
+                return false
             }
-        } catch { error = error; return false }
+        } catch { caughtError in
+            self.error = caughtError
+            return false
+        }
     }
 
     func restorePurchases() async {
-        do { try await AppStore.sync(); await refresh() } catch { error = error }
+        do {
+            try await AppStore.sync()
+            await refresh()
+        } catch { caughtError in
+            self.error = caughtError
+        }
     }
 
     private func observeTransactionUpdates() -> Task<Void, Never> {
@@ -56,7 +75,8 @@ final class SubscriptionManager: ObservableObject {
             for await result in Transaction.updates {
                 guard let self else { return }
                 if case .verified(let transaction) = result {
-                    await transaction.finish(); await self.refresh()
+                    await transaction.finish()
+                    await self.refresh()
                 }
             }
         }
