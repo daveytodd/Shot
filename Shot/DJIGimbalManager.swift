@@ -16,7 +16,7 @@ import Foundation
     func advanceSweep() async { guard let writeCharacteristic else { return }; let packet = GimbalPacket.waypoint(pan: 0, tilt: 0); peripheral?.writeValue(packet, for: writeCharacteristic, type: .withoutResponse) }
     private func handle(_ data: Data) { if data.contains(0x01) { NotificationCenter.default.post(name: .shotHardwareShutter, object: nil) } }
 }
-extension DJIGimbalManager: CBCentralManagerDelegate, CBPeripheralDelegate {
+extension DJIGimbalManager: @preconcurrency CBCentralManagerDelegate, @preconcurrency CBPeripheralDelegate {
     func centralManagerDidUpdateState(_ central: CBCentralManager) { if central.state == .poweredOn { scan() } }
     func centralManager(_ central: CBCentralManager, didDiscover p: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) { guard p.name?.localizedCaseInsensitiveContains("DJI") == true || p.name?.localizedCaseInsensitiveContains("Osmo") == true else { return }; self.peripheral = p; deviceName = p.name; isScanning = false; central.stopScan(); p.delegate = self; central.connect(p) }
     func centralManager(_ central: CBCentralManager, didConnect p: CBPeripheral) { isPaired = true; p.discoverServices(nil) }
